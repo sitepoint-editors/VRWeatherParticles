@@ -176,8 +176,14 @@
             cityTimes.push(new Date(timeZone.timestamp * 1000));
 
             t++;
-            if (t < len) lookupTimezones(t, len);
-            else applyWeatherConditions();
+
+            if (t < len) {
+              setTimeout(function() {
+                lookupTimezones(t, len);
+              }, 1200);
+            } else {
+              applyWeatherConditions();
+            }
         });
       }
 
