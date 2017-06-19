@@ -22,6 +22,7 @@
     <div id="webglviewer"></div>
 
     <script src="./js/three.min.js"></script>
+
     <script src="./js/StereoEffect.js"></script>
     <script src="./js/DeviceOrientationControls.js"></script>
     <script src="./js/OrbitControls.js"></script>
@@ -30,7 +31,7 @@
 
     <script>
       var scene,
-          camera, 
+          camera,
           renderer,
           element,
           container,
@@ -139,7 +140,7 @@
           sprite.position.setLength(maxParticleSize * Math.random());
 
           sprite.material.blending = THREE.AdditiveBlending;
-          
+
           particles.add(sprite);
         }
         particles.position.y = 70;
@@ -160,14 +161,14 @@
         }
         getURL('http://api.openweathermap.org/data/2.5/group?id=' + cityIDs + '&APPID=b5c0b505a8746a1b2cc6b17cdab34535', function(info) {
           cityWeather = info.list;
-          
+
           lookupTimezones(0, cityWeather.length);
         });
       }
 
       function lookupTimezones(t, len) {
         var tz = new TimeZoneDB;
-        
+
         tz.getJSON({
             key: "GPH4A5Q6NGI1",
             lat: cityWeather[t].coord.lat,
@@ -192,7 +193,7 @@
 
         var info = cityWeather[currentCity];
 
-        particleRotationSpeed = info.wind.speed / 2; // dividing by 2 just to slow things down 
+        particleRotationSpeed = info.wind.speed / 2; // dividing by 2 just to slow things down
         particleRotationDeg = info.wind.deg;
 
         var timeThere = cityTimes[currentCity] ? cityTimes[currentCity].getUTCHours() : 0,
@@ -245,7 +246,7 @@
             particleRotationDirection = particleRotationDeg <= 180 ? -1 : 1;
 
         particles.rotation.y = elapsedSeconds * particleRotationSpeed * particleRotationDirection;
-        
+
         // We check if the color range has changed, if so, we'll change the colours
         if (lastColorRange[0] != currentColorRange[0] && lastColorRange[1] != currentColorRange[1]) {
 
