@@ -55,6 +55,7 @@
           cities = [['Sydney', '2147714'], ['New York', '5128638'], ['Tokyo', '1850147'], ['London', '2643743'], ['Mexico City', '3530597'], ['Miami', '4164138'], ['San Francisco', '5391959'], ['Rome', '3169070']],
           cityWeather = {},
           cityTimes = [],
+          // Keep track of which city we're displaying in our series of cities
           currentCity = 0,
           currentCityText = new THREE.TextGeometry(),
           currentCityTextMesh = new THREE.Mesh();
@@ -177,6 +178,8 @@
 
         adjustToWeatherConditions();
 
+        // Track time running in three.js experience
+        // Tracks time between each render
         clock = new THREE.Clock();
 
         animate();
@@ -189,16 +192,21 @@
         for (var i = 0; i < cities.length; i++) {
           cityIDs += cities[i][1];
           if (i != cities.length - 1) cityIDs += ',';
-        }
+        } // list of cities for get request containing both names and IDs
         getURL('http://api.openweathermap.org/data/2.5/group?id=' + cityIDs + '&APPID=b5c0b505a8746a1b2cc6b17cdab34535', function(info) {
           cityWeather = info.list;
+          // Callback function that retrieves weather data for all cities under cityWeather variable. info.list returned in JSON contains info that we want
 
+          // Pass in our weather array's length so for the amount of cities to loop through
           lookupTimezones(0, cityWeather.length);
         });
       }
 
+      // Retrieves time in respectable location
+      // Pass a value of 0 to look up timezone for first city
       function lookupTimezones(t, len) {
         var tz = new TimeZoneDB;
+        // Functions BEGINS by using tx variable (we have access from timezonedb.js)
 
         tz.getJSON({
             key: "GPH4A5Q6NGI1",
@@ -206,9 +214,11 @@
             lng: cityWeather[t].coord.lon
         }, function(timeZone){
             cityTimes.push(new Date(timeZone.timestamp * 1000));
-
+            // Each timzone at each location is stored in cityTimes data array
             t++;
 
+            // t = index
+            // len - length of weather data array
             if (t < len) {
               setTimeout(function() {
                 lookupTimezones(t, len);
@@ -218,44 +228,61 @@
             }
         });
       }
+      // setTimeout avoids abundance of loops/second. Loops have 1200 millisecond delay between
 
       function applyWeatherConditions() {
+        // displayCurrentCityName adds 3D text
         displayCurrentCityName(cities[currentCity][0]);
 
+        // Assign weather data to info for clear reference
         var info = cityWeather[currentCity];
 
+        // Wind in miles/second divided by 2 (slowed down to see the particles)
         particleRotationSpeed = info.wind.speed / 2; // dividing by 2 just to slow things down
+        // Represents the wind direction in degrees
         particleRotationDeg = info.wind.deg;
 
+        // getUTCHours pulls out the hour value
         var timeThere = cityTimes[currentCity] ? cityTimes[currentCity].getUTCHours() : 0,
             isDay = timeThere >= 6 && timeThere <= 18;
+            // Determines day or night broadly
 
+        // Set particle coloration based on cases
         if (isDay) {
           switch (info.weather[0].main) {
             case 'Clouds':
+              // [hue of color, saturation]
               currentColorRange = [0, 0.01];
+              // Hue is 0 when cloudy (white)
               break;
             case 'Rain':
               currentColorRange = [0.7, 0.1];
+              // Hue is blue and darker when rainy
               break;
             case 'Clear':
             default:
               currentColorRange = [0.6, 0.7];
+              // Hue is blue and light when clear
               break;
           }
         } else {
           currentColorRange = [0.69, 0.6];
+          // Otherwise at night, hue is purple and lighter
         }
 
         if (currentCity < cities.length-1) currentCity++;
         else currentCity = 0;
 
+        // 5 second setTimeout
         setTimeout(applyWeatherConditions, 5000);
       }
 
+      // Display current city name
       function displayCurrentCityName(name) {
         scene.remove(currentCityTextMesh);
 
+        // Passes in appropriate text
+        // Set up fully opaque, white ext
         currentCityText = new THREE.TextGeometry(name, {
           size: 4,
           height: 1
@@ -272,10 +299,17 @@
         scene.add(currentCityTextMesh);
       }
 
+      // Move and refresh on each frame
+      // First run on end of init()
       function animate() {
+        // Gets number of second that three.js scene has been running
+        // Stores within elapsedSeconds
         var elapsedSeconds = clock.getElapsedTime(),
             particleRotationDirection = particleRotationDeg <= 180 ? -1 : 1;
+            // Rotate particles clockwise at less than or equal to 180 degrees
+            // Otherwise rotate counter-clockwise
 
+        // Calculate number of seconds animation has been running, multiplies by speed travelled and direction we'd like them to go
         particles.rotation.y = elapsedSeconds * particleRotationSpeed * particleRotationDirection;
 
         // We check if the color range has changed, if so, we'll change the colours
@@ -288,9 +322,12 @@
           lastColorRange = currentColorRange;
         }
 
+        // Set animate() to run again next animation frame
         requestAnimationFrame(animate);
 
+        // Keeps our renderer, camera object and controls matching the browser viewport size
         update(clock.getDelta());
+        // Renders our scene on each frame. Effect is called to render it using the stereoscopic effect set up earlier
         render(clock.getDelta());
       }
 
