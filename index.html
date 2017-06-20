@@ -42,7 +42,7 @@
           controls,
           clock,
 
-          // Particles
+          // Particles (global variable)
           particles = new THREE.Object3D(),
           totalParticles = 200,
           maxParticleSize = 200,
@@ -91,35 +91,45 @@
         controls.noZoom = true;
 
         // Our preferred controls via DeviceOrientation
+        // Checking for alpha value (initial check)
         function setOrientationControls(e) {
           if (!e.alpha) {
             return;
           }
 
+          // Browser will now move the device around
           controls = new THREE.DeviceOrientationControls(camera, true);
           controls.connect();
           controls.update();
 
+          // Full screen on click
+          // Excludes address bar
           element.addEventListener('click', fullscreen, false);
 
+          // Remove Orientation Listener
           window.removeEventListener('deviceorientation', setOrientationControls, true);
         }
         window.addEventListener('deviceorientation', setOrientationControls, true);
         // Track motion of the iPhone in Google Cardboard
 
         // Lighting
+        // Light is angled
         var light = new THREE.PointLight(0x999999, 2, 100);
         light.position.set(50, 50, 50);
         scene.add(light);
 
+        // Points straight down to light up where we will be standing
         var lightScene = new THREE.PointLight(0x999999, 2, 100);
         lightScene.position.set(0, 5, 0);
         scene.add(lightScene);
 
+        // Giving floor context - image use from textures directory
         var floorTexture = THREE.ImageUtils.loadTexture('textures/wood.jpg');
         floorTexture.wrapS = THREE.RepeatWrapping;
         floorTexture.wrapT = THREE.RepeatWrapping;
+        // Size of the texture to be repeated
         floorTexture.repeat = new THREE.Vector2(50, 50);
+        // Clear imagery on floor image
         floorTexture.anisotropy = renderer.getMaxAnisotropy();
 
         var floorMaterial = new THREE.MeshPhongMaterial({
@@ -130,8 +140,10 @@
           map: floorTexture
         });
 
+        // Defining three.js geometry from library of shapes
         var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
 
+        // Syncing geometry and floor material to make a tangible contextual object
         var floor = new THREE.Mesh(geometry, floorMaterial);
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
@@ -142,17 +154,24 @@
             color: 0xffffff
           });
 
+        // Iterating through number of particles (200)
         for (var i = 0; i < totalParticles; i++) {
           var sprite = new THREE.Sprite(spriteMaterial);
+          // Assigning spriteMaterial to new three.js object
 
+          // Scale and position to same size as texture
           sprite.scale.set(64, 64, 1.0);
+          // Particles in random positions
           sprite.position.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.75);
           sprite.position.setLength(maxParticleSize * Math.random());
+          // Set particles to be between 0 and 200
 
+          // Blending style (courtesy of three.js)
           sprite.material.blending = THREE.AdditiveBlending;
 
           particles.add(sprite);
         }
+        // Raise particles so they are floating around the camera
         particles.position.y = 70;
         scene.add(particles);
 
@@ -163,7 +182,9 @@
         animate();
       }
 
+      // API works best with one HTTParty request
       function adjustToWeatherConditions() {
+        // cityIDs starts empty
         var cityIDs = '';
         for (var i = 0; i < cities.length; i++) {
           cityIDs += cities[i][1];
