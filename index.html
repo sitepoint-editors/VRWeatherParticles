@@ -22,10 +22,13 @@
     <div id="webglviewer"></div>
 
     <script src="./js/three.min.js"></script>
-
+    <!-- Main minified library for three.js -->
     <script src="./js/StereoEffect.js"></script>
+    <!-- Displays split in two -->
     <script src="./js/DeviceOrientationControls.js"></script>
+    <!-- Where the devise is facing and where it is moving to -->
     <script src="./js/OrbitControls.js"></script>
+    <!-- Controls the scene (mouse clicks or touch events) DeviseOrientation typically not available on computer testing (desktop) -->
     <script src="./js/helvetiker_regular.typeface.js"></script>
     <script src="https://timezonedb.googlecode.com/files/timezonedb.js" type="text/javascript"></script>
 
@@ -56,11 +59,14 @@
           currentCityText = new THREE.TextGeometry(),
           currentCityTextMesh = new THREE.Mesh();
 
+      // Begin function
       init();
 
       function init() {
+        // New scene
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.001, 700);
+        // virtual height is most important
         camera.position.set(0, 15, 0);
         scene.add(camera);
 
@@ -69,15 +75,18 @@
         container = document.getElementById('webglviewer');
         container.appendChild(element);
 
+        // VR stereoscopic view
         effect = new THREE.StereoEffect(renderer);
 
         // Our initial control fallback with mouse/touch events in case DeviceOrientation is not enabled
         controls = new THREE.OrbitControls(camera, element);
         controls.target.set(
+        // Target rotating spot 0.15 more than camera's x position, same y and z points
           camera.position.x + 0.15,
           camera.position.y,
           camera.position.z
         );
+        // Panning and zooming off to avoid complications
         controls.noPan = true;
         controls.noZoom = true;
 
@@ -96,6 +105,7 @@
           window.removeEventListener('deviceorientation', setOrientationControls, true);
         }
         window.addEventListener('deviceorientation', setOrientationControls, true);
+        // Track motion of the iPhone in Google Cardboard
 
         // Lighting
         var light = new THREE.PointLight(0x999999, 2, 100);
